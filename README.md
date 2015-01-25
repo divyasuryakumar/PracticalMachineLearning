@@ -1,5 +1,7 @@
 PracticalMachineLearning
 ========================
+Link to html file: https://rpubs.com/divyasuryakumar/PML
+
 Data 
 The training data for this project are available here: 
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
@@ -15,3 +17,11 @@ The goal of your project is to predict the manner in which they did the exercise
 
 Reproducibility 
 Due to security concerns with the exchange of R code, your code will not be run during the evaluation by your classmates. Please be sure that if they download the repo, they will be able to view the compiled HTML version of your analysis.
+
+Executive Summary 
+
+This document presents the results of the Practical Machine Learning Peer Assessments in a report using a single R markdown document that can be processed by knitr and be transformed into an HTML file.
+
+Since we have a data set with to many columns and we need make a class prediction, we decide implement a random forests model, that’s no need cross-validation or a separate test set to get an unbiased estimate of the test set error. Before apply the dataset to our prediction modelo, we decide remove all the columns that having less than 60% of data filled, instead try to filled it with some center measure. Our model accuracy over validation dataset is equal to 99.9235%. This model promoted a excelente prediction results with our testing dataset and generated the 20th files answers to submit for the Assignments. The Assignments returned to us that he 20th files answers as being correct!
+
+Requisites of This Assignment This assignment instructions request to: 1. predict the manner in which they did the exercise. This is the “classe” variable in the training set. All other variables can be use as predictor. 2. Shwo how I built my model, how I used cross validation, what I think the expected out of sample error is, and why I made the choices I did. 3. This prediction model alsi to predict 20 different test cases from the test data are available here: https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
