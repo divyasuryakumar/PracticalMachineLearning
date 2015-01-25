@@ -1,0 +1,130 @@
+---
+title: "PML Peer Assignment"
+author: "Divya Suryakumar"
+date: "January 24, 2015"
+output: html_document
+---
+
+Executive Summary
+This document presents the results of the Practical Machine Learning Peer Assessments in a report using a single R markdown document that can be processed by knitr and be transformed into an HTML file.
+
+Since we have a data set with to many columns and we need make a class prediction, we decide implement a random forests model, that’s no need cross-validation or a separate test set to get an unbiased estimate of the test set error. Before apply the dataset to our prediction modelo, we decide remove all the columns that having less than 60% of data filled, instead try to filled it with some center measure. Our model accuracy over validation dataset is equal to 99.9235%. This model promoted a excelente prediction results with our testing dataset and generated the 20th files answers to submit for the Assignments. The Assignments returned to us that he 20th files answers as being correct!
+
+Requisites of This Assignment
+This assignment instructions request to: 1. predict the manner in which they did the exercise. This is the “classe” variable in the training set. All other variables can be use as predictor. 2. Shwo how I built my model, how I used cross validation, what I think the expected out of sample error is, and why I made the choices I did. 3. This prediction model alsi to predict 20 different test cases from the test data are available here: https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+Prepare the Environment
+Throughout this report you can always find the code that I used to generate my output presents here. When writing code chunks in the R markdown document, always use echo = TRUE so that someone else will be able to read the code. This assignment will be evaluated via peer assessment so it’s essential that my peer evaluators be able to review my code and my analysis together..
+
+First, we set echo equals to TRUE and results equals to ‘hold’ as global options for this document.
+
+```{r}
+setwd("/Users/divyasuryakumar/Documents/PracticalMachineLearning")
+
+library(knitr)
+#opts_chunk$set(echo = TRUE, results = 'hold')
+library(ElemStatLearn)
+library(caret)
+library(rpart)
+library(randomForest)
+set.seed(357)
+list.files()
+```
+
+Loading required data(testing and training)
+Proprocessing the data to remove NA's.
+
+```{r, echo=TRUE, results='hold'}
+trainset <- read.csv("pml-training.csv", header=TRUE, sep=",", na.strings=c("NA",""))
+testset <- read.csv("pml-testing.csv", header=TRUE, sep=",", na.strings=c("NA",""))
+
+trainset <- trainset[,-1] #unwanted id column 
+inTrain = createDataPartition(trainset$classe, p=0.60, list=FALSE)
+training = trainset[inTrain,]
+validating = trainset[-inTrain,]
+
+#keep only the required columns
+Keep <- c((colSums(!is.na(training[,-ncol(training)])) >= 0.6*nrow(training)))
+training   <-  training[,Keep]
+validating <- validating[,Keep]
+```
+
+Build a Random Forest Model and show the results. Find the model importances and display the confusion matrix. Also find the accuracy of the prediction.
+
+```{r, echo=TRUE, results='hold'}
+model <- randomForest(classe~.,data=training)
+print(model)
+
+importance(model)
+confusionMatrix(predict(model,newdata=validating[,-ncol(validating)]),validating$classe)
+accurancy<-c(as.numeric(predict(model,newdata=validating[,-ncol(validating)])==validating$classe))
+accurancy<-sum(accurancy)*100/nrow(validating)
+
+plot(model, log ="y", lwd = 2, main = "Random forest accuracy")
+
+```
+
+Testing
+After the model is build now test the model with the testing set.
+Display the results from testing.
+
+```{r, echo=TRUE, results='hold'}
+testset <- testset[,-1] # Remove the first column that represents a ID Row
+testset <- testset[ , Keep] # Keep the same columns of testing dataset
+testset <- testset[,-ncol(testset)] # Remove the problem ID
+
+# Coerce testing dataset to same class and strucuture of training dataset 
+testing <- rbind(training[100, -59] , testset) 
+# Apply the ID Row to row.names and 100 for dummy row from testing dataset 
+row.names(testing) <- c(100, 1:20)
+
+predictions <- predict(model,newdata=testing[-1,])
+print(predictions)
+
+```
+*** Out of Sample error
+We find the Out of sample rate in the following way. 
+It is seen that the Out of sample error estimation: 0.08%
+This is Awesome!
+
+```{r, echo=TRUE, results='hold'}
+#How big is the validation set?
+dim(validating)
+
+predictions <- predict(model,newdata=testing[-1,])
+print(predictions)
+length(predictions)
+
+# true accuracy of the predicted model
+p2 <- predict(model, validating)
+outOfSampleError.accuracy <- sum(p2 == validating$classe)/length(p2)
+outOfSampleError.accuracy
+
+# out of sample error and percentage of out of sample error
+outOfSampleError <- 1 - outOfSampleError.accuracy
+outOfSampleError
+
+e <- outOfSampleError * 100
+paste0("Out of sample error estimation: ", round(e, digits = 2), "%")
+
+
+```
+Write the results into seperate files.
+
+```{r, echo=TRUE, results='hold'}
+write_files <- function(x) {
+  n <- length(x)
+  for (i in 1:n) {
+    filename <- paste0("problem_id", i, ".txt")
+    write.table(x[i], file=filename, quote=FALSE, row.names=FALSE,col.names=FALSE)
+  }
+}
+
+write_files(predictions)
+
+```
+
+Result
+
+Since accuracy of prediction is high for my model = 99.92%. So as expected, all 20th files answers submitted were correct! from the test set. Hurry!!!
+
